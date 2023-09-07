@@ -15,4 +15,9 @@ class TextManager extends ChangeNotifier {
     texts.add(value);
     notifyListeners();
   }
+
+  void deleteText(int index) {
+    texts.removeAt(index);
+    notifyListeners();
+  }
 }

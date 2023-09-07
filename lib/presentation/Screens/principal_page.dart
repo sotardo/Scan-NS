@@ -28,7 +28,18 @@ class PrincipalPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final numero = index + 1;
                 final texto = texts[index];
-                return TarjetaConTexto(numero: numero, texto: texto);
+                return TarjetaConTexto(
+                  numero: numero,
+                  texto: texto,
+                  onDelete: () {
+                    // Lógica para eliminar el texto
+                    textManager.deleteText(index);
+                  },
+                  onEdit: () {
+                    // Lógica para editar el texto
+                    _showEditDialog(context, textManager, index, texto);
+                  },
+                );
               },
             );
           },
@@ -39,7 +50,47 @@ class PrincipalPage extends StatelessWidget {
           Navigator.pop(context);
         },
         child: Icon(Icons.add),
-        ),
+      ),
+    );
+  }
+
+  void _showEditDialog(
+    BuildContext context,
+    TextManager textManager,
+    int index,
+    String currentText,
+  ) {
+    TextEditingController _editingController = TextEditingController();
+    _editingController.text = currentText;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Editar Texto"),
+          content: TextField(
+            controller: _editingController,
+            decoration: InputDecoration(hintText: "Nuevo Texto"),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                // Actualiza el texto en la lista con el nuevo valor
+                textManager.texts[index] = _editingController.text;
+                textManager.notifyListeners();
+                Navigator.pop(context);
+              },
+              child: Text("Guardar"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancelar"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -47,27 +98,42 @@ class PrincipalPage extends StatelessWidget {
 class TarjetaConTexto extends StatelessWidget {
   final int numero;
   final String texto;
+  final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
-  TarjetaConTexto({required this.numero, required this.texto});
+  TarjetaConTexto({
+    required this.numero,
+    required this.texto,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Text(
               '$numero - ',
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 12), // Agrega un espacio adicional entre el número y el texto
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 texto,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.left,
               ),
+            ),
+            IconButton(
+              onPressed: onDelete,
+              icon: Icon(Icons.delete),
+            ),
+            IconButton(
+              onPressed: onEdit,
+              icon: Icon(Icons.edit),
             ),
           ],
         ),

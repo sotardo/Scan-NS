@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scalable_ocr/flutter_scalable_ocr.dart';
-import 'dart:async';
 import 'dart:developer';
 import 'package:provider/provider.dart'; // Importa Provider
 import 'package:prueba/presentation/Screens/principal_page.dart';
@@ -29,6 +28,9 @@ class MyApp extends StatelessWidget {
       home:  Consumer<TextManager>(
         builder: (context, textManager, child) => CameraPage(textManager: textManager),
       ),
+      routes:{  'principal': (context) => const PrincipalPage(),
+
+        }
     );
   }
 }
@@ -50,6 +52,7 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Escanear"),
+        centerTitle: true,
       ),
       body: Center(
         child: Column(
@@ -72,17 +75,28 @@ class _CameraPageState extends State<CameraPage> {
                   text = value;
                 }),
             Text(text),
-            TextButton(
-                onPressed: () {
-                  // Guardar el texto en la variable $text
-                  widget.textManager.setText(text);
-                  // Navegar a la otra pantalla
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => PrincipalPage()));
-                },
-                child: Text("Guardar"))
+            ElevatedButton(
+  onPressed: () {
+    // Guardar el texto en la variable $text
+    widget.textManager.setText(text);
+    // Navegar a la otra pantalla
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrincipalPage(),
+      ),
+    );
+  },
+  child: Text("Guardar"),
+),
+const SizedBox( height: 30),
+ElevatedButton(
+  onPressed: () {
+    Navigator.pushNamed(context, 'principal');
+  },
+  child: Text('Escaneos')
+  
+  ),
           ],
         ),
       ),

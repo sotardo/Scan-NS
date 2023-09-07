@@ -9,10 +9,10 @@ class TextManager extends ChangeNotifier {
     return _instance!;
   }
 
-  String text = "";
+  List<String> texts = [];
 
   void setText(String value) {
-    text = value;
+    texts.add(value);
     notifyListeners();
   }
 }

@@ -9,12 +9,14 @@ class PrincipalPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Texto capturado"),
+        title: Text("Textos capturados"),
       ),
       body: Center(
         child: Consumer<TextManager>(
-          builder: (context, textManager, child) => Text(textManager.text),
-          
+          builder: (context, textManager, child) => ListView.builder(
+            itemCount: textManager.texts.length,
+            itemBuilder: (context, index) => Text(textManager.texts[index]),
+          ),
         ),
       ),
     );

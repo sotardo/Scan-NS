@@ -4,37 +4,74 @@ import 'package:prueba/providers/text_manager.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart'; // Importa esta línea para abrir el archivo
+import 'package:open_file/open_file.dart';
 import 'dart:io';
 
 class PrincipalPage extends StatelessWidget {
   const PrincipalPage({Key? key}) : super(key: key);
 
-  Future<void> _generateAndOpenPDF(BuildContext context, List<String> texts) async {
-    final doc = pw.Document();
-    doc.addPage(pw.MultiPage(
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return texts.map((text) => pw.Text(text)).toList();
-      },
-    ));
+ Future<void> _generateAndOpenPDF(BuildContext context, List<String> texts) async {
+  final doc = pw.Document();
+  doc.addPage(pw.MultiPage(
+    pageFormat: PdfPageFormat.a4,
+    build: (pw.Context context) {
+      return texts.map((text) => pw.Container(
+        margin: pw.EdgeInsets.only(bottom: 10.0), // Espacio vertical entre textos
+        child: pw.Text(
+          text,
+          style: pw.TextStyle(
+            fontSize: 20,
+          ),
+        ),
+      )).toList();
+    },
+  ));
 
-    final directory = await getTemporaryDirectory();
+  final directory = await getTemporaryDirectory();
+
+  final bytes = await doc.save();
+
+  final newPath = await showDialog<String>(
+    context: context,
+    builder: (context) {
+      TextEditingController fileNameController = TextEditingController();
+      return AlertDialog(
+        title: Text("Editar Nombre de Guardado"),
+        content: TextField(
+          controller: fileNameController,
+          decoration: InputDecoration(hintText: "Nombre de archivo"),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              String enteredFileName = fileNameController.text.trim();
+              if (!enteredFileName.endsWith('.pdf')) {
+                enteredFileName += '.pdf'; // Agregar extensión si no la tiene
+              }
+              Navigator.pop(context, enteredFileName);
+            },
+            child: Text("Guardar"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, null);
+            },
+            child: Text("Cancelar"),
+          ),
+        ],
+      );
+    },
+  );
+
+  if  (newPath != null) {
+    final file = File("${directory.path}/$newPath");
+    await file.writeAsBytes(bytes);
+    OpenFile.open(file.path);
+  } else {
     final file = File("${directory.path}/text_pdf.pdf");
-
-    // Añade esta línea de código
-    final bytes = await doc.save();
-
-    // Cambia esta línea de código
-    // await file.writeAsBytes(doc.save());
-    // a esta línea de código
-   final newPath = "${directory.path}/my_pdf.pdf";
-  await file.rename(newPath);
-  await file.writeAsBytes(bytes);
-
-    // Abrir el PDF generado con la aplicación predeterminada
     OpenFile.open(file.path);
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +81,10 @@ class PrincipalPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.share),
+            icon: Icon(Icons.picture_as_pdf_rounded),
             onPressed: () {
               final textManager = Provider.of<TextManager>(context, listen: false);
               _generateAndOpenPDF(context, textManager.texts);
-              
             },
           ),
         ],
@@ -67,11 +103,9 @@ class PrincipalPage extends StatelessWidget {
                   numero: numero,
                   texto: texto,
                   onDelete: () {
-                    // Lógica para eliminar el texto
                     textManager.deleteText(index);
                   },
                   onEdit: () {
-                    // Lógica para editar el texto
                     _showEditDialog(context, textManager, index, texto);
                   },
                 );
@@ -95,7 +129,6 @@ class PrincipalPage extends StatelessWidget {
     int index,
     String currentText,
   ) {
-    
     TextEditingController _editingController = TextEditingController();
     _editingController.text = currentText;
 
@@ -111,7 +144,6 @@ class PrincipalPage extends StatelessWidget {
           actions: [
             ElevatedButton(
               onPressed: () {
-                // Actualiza el texto en la lista con el nuevo valor
                 textManager.texts[index] = _editingController.text;
                 textManager.notifyListeners();
                 Navigator.pop(context);
@@ -130,7 +162,6 @@ class PrincipalPage extends StatelessWidget {
     );
   }
 }
-
 
 class TarjetaConTexto extends StatelessWidget {
   final int numero;

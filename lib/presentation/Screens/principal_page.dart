@@ -24,38 +24,26 @@ class PrincipalPage extends StatelessWidget {
     height: 300, // Ajusta la altura de la imagen
   );
 
-  doc.addPage(
-    pw.Page(
-      orientation: pw.PageOrientation.portrait,
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start, // Ajusta el inicio de los textos a la izquierda
-          children: [
-            pw.Header(
-              level: 0,
-              child: pw.Container(
-                alignment: pw.Alignment.center, // Centra la imagen verticalmente y horizontalmente
-                margin: pw.EdgeInsets.only(top: 0, bottom: 0), // Ajusta los márgenes para centrar verticalmente
-                padding: pw.EdgeInsets.zero, // Elimina cualquier espacio adicional
-                child: logo, // Imagen en el centro del encabezado
-              ),
-            ),
-            ...texts.map((text) => pw.Container(
-              margin: pw.EdgeInsets.only(top: 10.0), // Espacio vertical entre textos
-              child: pw.Text(
-                text,
-                style: pw.TextStyle(
-                  fontSize: 20,
-                ),
-              ),
-            )).toList(),
-          ],
-        );
-      },
-    ),
-  );
+  // Variables para el control de texto por página
+  final maxTextsPerPage = 14; // Cantidad máxima de textos por página
+  List<String> currentPageTexts = []; // Textos en la página actual
+  int pageNumber = 1; // Inicializar el número de página
 
+  for (final text in texts) {
+    currentPageTexts.add(text);
+
+    if (currentPageTexts.length >= maxTextsPerPage) {
+      // Si se supera la cantidad máxima de textos por página, agregamos la página actual y comenzamos una nueva
+      _addTextPage(doc, currentPageTexts, logo, pageNumber);
+      currentPageTexts = [];
+      pageNumber++;
+    }
+  }
+
+  // Agregar la última página si quedan textos sin agregar
+  if (currentPageTexts.isNotEmpty) {
+    _addTextPage(doc, currentPageTexts, logo, pageNumber);
+  }
 
   final directory = await getTemporaryDirectory();
 
@@ -93,7 +81,7 @@ class PrincipalPage extends StatelessWidget {
     },
   );
 
-  if  (newPath != null) {
+  if (newPath != null) {
     final file = File("${directory.path}/$newPath");
     await file.writeAsBytes(bytes);
     OpenFile.open(file.path);
@@ -102,6 +90,51 @@ class PrincipalPage extends StatelessWidget {
     OpenFile.open(file.path);
   }
 }
+
+// Función para agregar una página al documento con texto y número de página
+void _addTextPage(pw.Document doc, List<String> textList, pw.Image logo, int pageNumber) {
+  doc.addPage(
+    pw.Page(
+      orientation: pw.PageOrientation.portrait,
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start, // Ajusta el inicio de los textos a la izquierda
+          children: [
+            pw.Header(
+              level: 0,
+              child: pw.Container(
+                alignment: pw.Alignment.center, // Centra la imagen verticalmente y horizontalmente
+                margin: pw.EdgeInsets.only(top: 0, bottom: 0), // Ajusta los márgenes para centrar verticalmente
+                padding: pw.EdgeInsets.zero, // Elimina cualquier espacio adicional
+                child: logo, // Imagen en el centro del encabezado
+              ),
+            ),
+            ...textList.map((text) => pw.Container(
+              margin: pw.EdgeInsets.only(top: 10.0), // Espacio vertical entre textos
+              child: pw.Text(
+                text,
+                style: pw.TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            )).toList(),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                'Página $pageNumber',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {

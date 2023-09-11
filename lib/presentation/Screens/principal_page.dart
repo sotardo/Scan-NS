@@ -14,43 +14,47 @@ class PrincipalPage extends StatelessWidget {
 
  Future<void> _generateAndOpenPDF(BuildContext context, List<String> texts) async {
   final doc = pw.Document();
-  final logo = pw.Container(
-      height: 150,
-      alignment: pw.Alignment.centerLeft,
-      child: pw.Image(
-        pw.ImageProxy(
-          PdfImage.file(
-            doc.document,
-            bytes: (await rootBundle.load("assets/p.png")).buffer.asUint8List(),
-          ),
-        ),
-      ),
-    ); 
 
- doc.addPage(
-      pw.Page(
-        orientation: pw.PageOrientation.portrait,
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Header(text: "Credencial"), // titulo
-              logo, // tu foto
-              ...texts.map((text) => pw.Container(
-        margin: pw.EdgeInsets.only(bottom: 10.0), // Espacio vertical entre textos
-        child: pw.Text(
-          text,
-          style: pw.TextStyle(
-            fontSize: 20,
-          ),
-        ),
-      )).toList(),
-            ],
-          );
-        },
-      ),
-    ); 
+  final ByteData imageData = await rootBundle.load("assets/p.png");
+  final Uint8List uint8List = imageData.buffer.asUint8List();
+
+  final logo = pw.Image(
+    pw.MemoryImage(uint8List),
+    width: 300, // Ajusta el ancho de la imagen
+    height: 300, // Ajusta la altura de la imagen
+  );
+
+  doc.addPage(
+    pw.Page(
+      orientation: pw.PageOrientation.portrait,
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start, // Ajusta el inicio de los textos a la izquierda
+          children: [
+            pw.Header(
+              level: 0,
+              child: pw.Container(
+                alignment: pw.Alignment.center, // Centra la imagen verticalmente y horizontalmente
+                margin: pw.EdgeInsets.only(top: 0, bottom: 0), // Ajusta los márgenes para centrar verticalmente
+                padding: pw.EdgeInsets.zero, // Elimina cualquier espacio adicional
+                child: logo, // Imagen en el centro del encabezado
+              ),
+            ),
+            ...texts.map((text) => pw.Container(
+              margin: pw.EdgeInsets.only(top: 10.0), // Espacio vertical entre textos
+              child: pw.Text(
+                text,
+                style: pw.TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            )).toList(),
+          ],
+        );
+      },
+    ),
+  );
 
 
   final directory = await getTemporaryDirectory();

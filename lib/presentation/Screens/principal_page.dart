@@ -6,16 +6,38 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'dart:io';
+import 'package:flutter/services.dart';
+
 
 class PrincipalPage extends StatelessWidget {
   const PrincipalPage({Key? key}) : super(key: key);
 
  Future<void> _generateAndOpenPDF(BuildContext context, List<String> texts) async {
   final doc = pw.Document();
-  doc.addPage(pw.MultiPage(
-    pageFormat: PdfPageFormat.a4,
-    build: (pw.Context context) {
-      return texts.map((text) => pw.Container(
+  final logo = pw.Container(
+      height: 150,
+      alignment: pw.Alignment.centerLeft,
+      child: pw.Image(
+        pw.ImageProxy(
+          PdfImage.file(
+            doc.document,
+            bytes: (await rootBundle.load("assets/p.png")).buffer.asUint8List(),
+          ),
+        ),
+      ),
+    ); 
+
+ doc.addPage(
+      pw.Page(
+        orientation: pw.PageOrientation.portrait,
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(text: "Credencial"), // titulo
+              logo, // tu foto
+              ...texts.map((text) => pw.Container(
         margin: pw.EdgeInsets.only(bottom: 10.0), // Espacio vertical entre textos
         child: pw.Text(
           text,
@@ -23,9 +45,13 @@ class PrincipalPage extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-      )).toList();
-    },
-  ));
+      )).toList(),
+            ],
+          );
+        },
+      ),
+    ); 
+
 
   final directory = await getTemporaryDirectory();
 

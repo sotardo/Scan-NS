@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Scalable OCR',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
       ),
       home: Consumer<TextManager>(
         builder: (context, textManager, child) =>
@@ -87,14 +87,26 @@ class _CameraPageState extends State<CameraPage> {
                   ),
                 );
               },
-              child: Text("Guardar"),
+              style:ButtonStyle(
+              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0 ), // Ajusta el padding según tus preferencias
+              ),
+             ),
+              child: Icon(Icons.camera_alt_outlined)
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 100),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, 'principal');
               },
-              child: Text('Escaneos'),
+              style:ButtonStyle(
+              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.symmetric(horizontal: 80.0, vertical: 5.0 ), // Ajusta el padding según tus preferencias
+              ),
+             ),
+              child: Text('Ir a Escaneos',
+              style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
